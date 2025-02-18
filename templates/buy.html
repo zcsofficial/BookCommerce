@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BookCommerce</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4F46E5',
+                        secondary: '#10B981'
+                    },
+                    borderRadius: {
+                        'none': '0px',
+                        'sm': '4px',
+                        DEFAULT: '8px',
+                        'md': '12px',
+                        'lg': '16px',
+                        'xl': '20px',
+                        '2xl': '24px',
+                        '3xl': '32px',
+                        'full': '9999px',
+                        'button': '8px'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :where([class^="ri-"])::before { content: "\f3c2"; }
+        .book-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+        .modal.active {
+            display: flex;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <header class="bg-white shadow-sm fixed w-full top-0 z-50">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <a href="#" class="font-['Pacifico'] text-2xl text-primary">logo</a>
+                
+                <nav class="hidden md:flex space-x-8">
+                    <a href="#" class="text-gray-700 hover:text-primary">Buy</a>
+                    <a href="#" class="text-gray-700 hover:text-primary">Sell</a>
+                    <a href="#" class="text-gray-700 hover:text-primary">Exchange</a>
+                    <a href="#" class="text-gray-700 hover:text-primary">Request</a>
+                </nav>
+
+                <div class="flex items-center space-x-4">
+                    <div class="relative">
+                        <input type="text" placeholder="Search books..." class="pl-10 pr-4 py-2 w-64 rounded-full border-gray-200 focus:border-primary focus:ring-1 focus:ring-primary">
+                        <i class="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                    <button class="w-10 h-10 flex items-center justify-center">
+                        <i class="ri-shopping-cart-line text-gray-700"></i>
+                    </button>
+                    <button class="w-10 h-10 flex items-center justify-center">
+                        <i class="ri-user-line text-gray-700"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 pt-24 pb-12">
+        <section class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            <div class="bg-white p-6 rounded shadow-sm hover:shadow-md transition-shadow">
+                <div class="w-12 h-12 flex items-center justify-center bg-primary/10 rounded-full mb-4">
+                    <i class="ri-book-line text-primary text-xl"></i>
+                </div>
+                <h3 class="text-lg font-semibold mb-2">Sell Book</h3>
+                <p class="text-gray-600 mb-4">List your books for sale and reach thousands of potential buyers</p>
+                <button onclick="showModal('sellModal')" class="bg-primary text-white px-4 py-2 rounded-button hover:bg-primary/90">Sell Now</button>
+            </div>
+
+            <div class="bg-white p-6 rounded shadow-sm hover:shadow-md transition-shadow">
+                <div class="w-12 h-12 flex items-center justify-center bg-secondary/10 rounded-full mb-4">
+                    <i class="ri-shopping-cart-line text-secondary text-xl"></i>
+                </div>
+                <h3 class="text-lg font-semibold mb-2">Buy Book</h3>
+                <p class="text-gray-600 mb-4">Browse through our extensive collection of books at great prices</p>
+                <button onclick="showModal('buyModal')" class="bg-secondary text-white px-4 py-2 rounded-button hover:bg-secondary/90">Browse Books</button>
+            </div>
+
+            <div class="bg-white p-6 rounded shadow-sm hover:shadow-md transition-shadow">
+                <div class="w-12 h-12 flex items-center justify-center bg-orange-100 rounded-full mb-4">
+                    <i class="ri-swap-line text-orange-500 text-xl"></i>
+                </div>
+                <h3 class="text-lg font-semibold mb-2">Exchange Book</h3>
+                <p class="text-gray-600 mb-4">Trade books with other readers and expand your collection</p>
+                <button onclick="showModal('exchangeModal')" class="bg-orange-500 text-white px-4 py-2 rounded-button hover:bg-orange-600">Exchange Now</button>
+            </div>
+
+            <div class="bg-white p-6 rounded shadow-sm hover:shadow-md transition-shadow">
+                <div class="w-12 h-12 flex items-center justify-center bg-purple-100 rounded-full mb-4">
+                    <i class="ri-bookmark-line text-purple-500 text-xl"></i>
+                </div>
+                <h3 class="text-lg font-semibold mb-2">Request Book</h3>
+                <p class="text-gray-600 mb-4">Can't find what you're looking for? Place a request</p>
+                <button onclick="showModal('requestModal')" class="bg-purple-500 text-white px-4 py-2 rounded-button hover:bg-purple-600">Request Now</button>
+            </div>
+        </section>
+
+        <section class="mb-12">
+            <h2 class="text-2xl font-semibold mb-6">Featured Books</h2>
+            <div class="book-grid">
+                <div class="bg-white p-4 rounded shadow-sm hover:shadow-md transition-shadow">
+                    <img src="https://public.readdy.ai/ai/img_res/ec8951b46d542ba123fae949b082d8ff.jpg" alt="Book cover" class="w-full h-64 object-cover rounded mb-4">
+                    <h3 class="font-semibold mb-1">The Art of Programming</h3>
+                    <p class="text-gray-600 text-sm mb-2">by Robert C. Martin</p>
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-primary font-semibold">$49.99</span>
+                        <span class="text-sm text-gray-500">Like New</span>
+                    </div>
+                    <button class="w-full bg-primary text-white px-4 py-2 rounded-button hover:bg-primary/90">Add to Cart</button>
+                </div>
+                
+                <div class="bg-white p-4 rounded shadow-sm hover:shadow-md transition-shadow">
+                    <img src="https://public.readdy.ai/ai/img_res/b0ad8b8f3198503add4bf39f7a048564.jpg" alt="Book cover" class="w-full h-64 object-cover rounded mb-4">
+                    <h3 class="font-semibold mb-1">Data Structures and Algorithms</h3>
+                    <p class="text-gray-600 text-sm mb-2">by Thomas H. Cormen</p>
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-primary font-semibold">$39.99</span>
+                        <span class="text-sm text-gray-500">Good</span>
+                    </div>
+                    <button class="w-full bg-primary text-white px-4 py-2 rounded-button hover:bg-primary/90">Add to Cart</button>
+                </div>
+
+                <div class="bg-white p-4 rounded shadow-sm hover:shadow-md transition-shadow">
+                    <img src="https://public.readdy.ai/ai/img_res/29eb99a4f63eb4299771a63059f9fbe4.jpg" alt="Book cover" class="w-full h-64 object-cover rounded mb-4">
+                    <h3 class="font-semibold mb-1">Machine Learning Basics</h3>
+                    <p class="text-gray-600 text-sm mb-2">by Ian Goodfellow</p>
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-primary font-semibold">$54.99</span>
+                        <span class="text-sm text-gray-500">New</span>
+                    </div>
+                    <button class="w-full bg-primary text-white px-4 py-2 rounded-button hover:bg-primary/90">Add to Cart</button>
+                </div>
+
+                <div class="bg-white p-4 rounded shadow-sm hover:shadow-md transition-shadow">
+                    <img src="https://public.readdy.ai/ai/img_res/e0145086783b5030cf82838c8cdff830.jpg" alt="Book cover" class="w-full h-64 object-cover rounded mb-4">
+                    <h3 class="font-semibold mb-1">Web Development Guide</h3>
+                    <p class="text-gray-600 text-sm mb-2">by Jennifer Robbins</p>
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-primary font-semibold">$44.99</span>
+                        <span class="text-sm text-gray-500">Like New</span>
+                    </div>
+                    <button class="w-full bg-primary text-white px-4 py-2 rounded-button hover:bg-primary/90">Add to Cart</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Sell Modal -->
+    <div id="sellModal" class="modal">
+        <div class="bg-white w-full max-w-2xl mx-auto my-8 p-6 rounded-lg">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-semibold">Sell Your Book</h2>
+                <button onclick="hideModal('sellModal')" class="text-gray-500 hover:text-gray-700">
+                    <i class="ri-close-line text-2xl"></i>
+                </button>
+            </div>
+            <form class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Book Title</label>
+                    <input type="text" class="w-full px-4 py-2 border rounded focus:ring-primary focus:border-primary" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Author Name</label>
+                    <input type="text" class="w-full px-4 py-2 border rounded focus:ring-primary focus:border-primary" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">ISBN</label>
+                    <input type="text" class="w-full px-4 py-2 border rounded focus:ring-primary focus:border-primary" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Condition</label>
+                    <select class="w-full px-4 py-2 border rounded focus:ring-primary focus:border-primary" required>
+                        <option>New</option>
+                        <option>Like New</option>
+                        <option>Good</option>
+                        <option>Fair</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Price ($)</label>
+                    <input type="number" class="w-full px-4 py-2 border rounded focus:ring-primary focus:border-primary" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <textarea class="w-full px-4 py-2 border rounded focus:ring-primary focus:border-primary" rows="4"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Upload Photos</label>
+                    <div class="border-2 border-dashed border-gray-300 rounded p-4 text-center">
+                        <i class="ri-upload-cloud-line text-4xl text-gray-400 mb-2"></i>
+                        <p class="text-sm text-gray-500">Drag and drop your photos here or click to upload</p>
+                        <input type="file" class="hidden" multiple accept="image/*">
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-primary text-white px-6 py-3 rounded-button hover:bg-primary/90">List Book for Sale</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Buy Modal -->
+    <div id="buyModal" class="modal">
+        <div class="bg-white w-full max-w-6xl mx-auto my-8 p-6 rounded-lg">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-semibold">Browse Books</h2>
+                <button onclick="hideModal('buyModal')" class="text-gray-500 hover:text-gray-700">
+                    <i class="ri-close-line text-2xl"></i>
+                </button>
+            </div>
+            <div class="grid grid-cols-4 gap-6">
+                <div class="col-span-1">
+                    <h3 class="font-semibold mb-4">Filters</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Price Range</label>
+                            <div class="flex items-center space-x-2">
+                                <input type="number" placeholder="Min" class="w-24 px-3 py-2 border rounded">
+                                <span>-</span>
+                                <input type="number" placeholder="Max" class="w-24 px-3 py-2 border rounded">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Condition</label>
+                            <div class="space-y-2">
+                                <label class="flex items-center">
+                                    <input type="checkbox" class="rounded text-primary">
+                                    <span class="ml-2 text-sm">New</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" class="rounded text-primary">
+                                    <span class="ml-2 text-sm">Like New</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" class="rounded text-primary">
+                                    <span class="ml-2 text-sm">Good</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" class="rounded text-primary">
+                                    <span class="ml-2 text-sm">Fair</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-span-3 grid grid-cols-3 gap-4">
+                    <!-- Book cards will be dynamically populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Exchange Modal -->
+    <div id="exchangeModal" class="modal">
+        <div class="bg-white w-full max-w-4xl mx-auto my-8 p-6 rounded-lg">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-semibold">Exchange Books</h2>
+                <button onclick="hideModal('exchangeModal')" class="text-gray-500 hover:text-gray-700">
+                    <i class="ri-close-line text-2xl"></i>
+                </button>
+            </div>
+            <div class="grid grid-cols-2 gap-8">
+                <div>
+                    <h3 class="font-semibold mb-4">Book You Have</h3>
+                    <form class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Book Title</label>
+                            <input type="text" class="w-full px-4 py-2 border rounded focus:ring-primary focus:border-primary" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Author</label>
+                            <input type="text" class="w-full px-4 py-2 border rounded focus:ring-primary focus:border-primary" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Condition</label>
+                            <select class="w-full px-4 py-2 border rounded focus:ring-primary focus:border-primary" required>
+                                <option>New</option>
+                                <option>Like New</option>
+                                <option>Good</option>
+                                <option>Fair</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Photos</label>
+                            <div class="border-2 border-dashed border-gray-300 rounded p-4 text-center">
+                                <i class="ri-upload-cloud-line text-4xl text-gray-400 mb-2"></i>
+                                <p class="text-sm text-gray-500">Upload photos of your book</p>
+                                <input type="file" class="hidden" multiple accept="image/*">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div>
+                    <h3 class="font-semibold mb-4">Book You Want</h3>
+                    <form class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Book Title</label>
+                            <input type="text" class="w-full px-4 py-2 border rounded focus:ring-primary focus:border-primary" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Author</label>
+                            <input type="text" class="w-full px-4 py-2 border rounded focus:ring-primary focus:border-primary" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Preferred Condition</label>
+                            <select class="w-full px-4 py-2 border rounded focus:ring-primary focus:border-primary" required>
+                                <option>New</option>
+                                <option>Like New</option>
+                                <option>Good</option>
+                                <option>Fair</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Additional Notes</label>
+                            <textarea class="w-full px-4 py-2 border rounded focus:ring-primary focus:border-primary" rows="4"></textarea>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="mt-6">
+                <button class="w-full bg-orange-500 text-white px-6 py-3 rounded-button hover:bg-orange-600">Propose Exchange</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Request Modal -->
+    <div id="requestModal" class="modal">
+        <div class="bg-white w-full max-w-2xl mx-auto my-8 p-6 rounded-lg">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-semibold">Request a Book</h2>
+                <button onclick="hideModal('requestModal')" class="text-gray-500 hover:text-gray-700">
+                    <i class="ri-close-line text-2xl"></i>
+                </button>
+            </div>
+            <form class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Book Title</label>
+                    <input type="text" class="w-full px-4 py-2 border rounded focus:ring-primary focus:border-primary" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Author</label>
+                    <input type="text" class="w-full px-4 py-2 border rounded focus:ring-primary focus:border-primary" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Edition (Optional)</label>
+                    <input type="text" class="w-full px-4 py-2 border rounded focus:ring-primary focus:border-primary">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Preferred Price Range</label>
+                    <div class="flex items-center space-x-2">
+                        <input type="number" placeholder="Min" class="w-full px-4 py-2 border rounded focus:ring-primary focus:border-primary">
+                        <span>-</span>
+                        <input type="number" placeholder="Max" class="w-full px-4 py-2 border rounded focus:ring-primary focus:border-primary">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Urgency Level</label>
+                    <select class="w-full px-4 py-2 border rounded focus:ring-primary focus:border-primary" required>
+                        <option>Low</option>
+                        <option>Medium</option>
+                        <option>High</option>
+                        <option>Urgent</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Additional Notes</label>
+                    <textarea class="w-full px-4 py-2 border rounded focus:ring-primary focus:border-primary" rows="4"></textarea>
+                </div>
+                <button type="submit" class="w-full bg-purple-500 text-white px-6 py-3 rounded-button hover:bg-purple-600">Submit Request</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function showModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function hideModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Close modal when clicking outside
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.remove('active');
+                    document.body.style.overflow = 'auto';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

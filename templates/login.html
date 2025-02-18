@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BookCommerce - Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
+    <style>
+        :where([class^="ri-"])::before { content: "\f3c2"; }
+        .password-toggle:checked + .password-input { -webkit-text-security: none; }
+        .password-strength { height: 4px; transition: width 0.3s; }
+        .auth-container { min-height: calc(100vh - 80px); }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4F46E5',
+                        secondary: '#E5E7EB'
+                    },
+                    borderRadius: {
+                        'none': '0px',
+                        'sm': '4px',
+                        DEFAULT: '8px',
+                        'md': '12px',
+                        'lg': '16px',
+                        'xl': '20px',
+                        '2xl': '24px',
+                        '3xl': '32px',
+                        'full': '9999px',
+                        'button': '8px'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50">
+    <div class="w-full min-h-screen flex flex-col">
+        <header class="h-20 flex items-center justify-center border-b bg-white">
+            <h1 class="text-3xl font-['Pacifico'] text-primary">logo</h1>
+        </header>
+
+        <div class="auth-container flex items-center justify-center p-4">
+            <div class="w-full max-w-md">
+                <div id="loginForm" class="bg-white rounded-lg shadow-lg p-8">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-8 text-center">Welcome Back</h2>
+                    <form id="authForm" class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="ri-mail-line text-gray-400"></i>
+                                </div>
+                                <input type="email" id="email" class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-button text-sm" required>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="ri-lock-line text-gray-400"></i>
+                                </div>
+                                <input type="password" id="password" class="block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-button text-sm" required>
+                                <button type="button" class="absolute inset-y-0 right-0 pr-3 flex items-center" onclick="togglePassword()">
+                                    <i class="ri-eye-line text-gray-400" id="passwordToggle"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <input type="checkbox" id="remember" class="h-4 w-4 text-primary border-gray-300 rounded">
+                                <label for="remember" class="ml-2 block text-sm text-gray-700">Remember me</label>
+                            </div>
+                            <a href="#" class="text-sm text-primary hover:text-primary/80">Forgot password?</a>
+                        </div>
+                        <button type="submit" class="w-full bg-primary text-white py-2 px-4 rounded-button hover:bg-primary/90 transition-colors !rounded-button whitespace-nowrap">Sign in</button>
+                        <div class="relative">
+                            <div class="absolute inset-0 flex items-center">
+                                <div class="w-full border-t border-gray-300"></div>
+                            </div>
+                            <div class="relative flex justify-center text-sm">
+                                <span class="px-2 bg-white text-gray-500">Or continue with</span>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <button type="button" class="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-button hover:bg-gray-50 !rounded-button whitespace-nowrap">
+                                <i class="ri-google-fill mr-2 text-[#DB4437]"></i>
+                                Google
+                            </button>
+                            <button type="button" class="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-button hover:bg-gray-50 !rounded-button whitespace-nowrap">
+                                <i class="ri-facebook-fill mr-2 text-[#4267B2]"></i>
+                                Facebook
+                            </button>
+                        </div>
+                    </form>
+
+                    <p class="mt-6 text-center text-sm text-gray-600">
+                        Don't have an account? 
+                        <button onclick="toggleForm()" class="text-primary hover:text-primary/80 font-medium">Sign up</button>
+                    </p>
+                </div>
+
+                <div id="registerForm" class="hidden bg-white rounded-lg shadow-lg p-8">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-8 text-center">Create Account</h2>
+                    <form id="registerAuthForm" class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="ri-user-line text-gray-400"></i>
+                                </div>
+                                <input type="text" id="fullName" class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-button text-sm" required>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="ri-mail-line text-gray-400"></i>
+                                </div>
+                                <input type="email" id="registerEmail" class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-button text-sm" required>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="ri-lock-line text-gray-400"></i>
+                                </div>
+                                <input type="password" id="registerPassword" class="block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-button text-sm" required onkeyup="checkPasswordStrength(this.value)">
+                                <button type="button" class="absolute inset-y-0 right-0 pr-3 flex items-center" onclick="toggleRegisterPassword()">
+                                    <i class="ri-eye-line text-gray-400" id="registerPasswordToggle"></i>
+                                </button>
+                            </div>
+                            <div class="mt-2 flex gap-2">
+                                <div class="password-strength bg-gray-200 rounded-full flex-1"></div>
+                                <div class="password-strength bg-gray-200 rounded-full flex-1"></div>
+                                <div class="password-strength bg-gray-200 rounded-full flex-1"></div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="ri-lock-line text-gray-400"></i>
+                                </div>
+                                <input type="password" id="confirmPassword" class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-button text-sm" required>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center">
+                            <input type="checkbox" id="terms" class="h-4 w-4 text-primary border-gray-300 rounded" required>
+                            <label for="terms" class="ml-2 block text-sm text-gray-700">
+                                I agree to the <a href="#" class="text-primary hover:text-primary/80">Terms</a> and <a href="#" class="text-primary hover:text-primary/80">Privacy Policy</a>
+                            </label>
+                        </div>
+
+                        <button type="submit" class="w-full bg-primary text-white py-2 px-4 rounded-button hover:bg-primary/90 transition-colors !rounded-button whitespace-nowrap">Create Account</button>
+                        <div class="relative">
+                            <div class="absolute inset-0 flex items-center">
+                                <div class="w-full border-t border-gray-300"></div>
+                            </div>
+                            <div class="relative flex justify-center text-sm">
+                                <span class="px-2 bg-white text-gray-500">Or sign up with</span>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <button type="button" class="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-button hover:bg-gray-50 !rounded-button whitespace-nowrap">
+                                <i class="ri-google-fill mr-2 text-[#DB4437]"></i>
+                                Google
+                            </button>
+                            <button type="button" class="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-button hover:bg-gray-50 !rounded-button whitespace-nowrap">
+                                <i class="ri-facebook-fill mr-2 text-[#4267B2]"></i>
+                                Facebook
+                            </button>
+                        </div>
+                    </form>
+
+                    <p class="mt-6 text-center text-sm text-gray-600">
+                        Already have an account? 
+                        <button onclick="toggleForm()" class="text-primary hover:text-primary/80 font-medium">Sign in</button>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification" class="fixed top-4 right-4 bg-white rounded-lg shadow-lg p-4 transform translate-x-full transition-transform duration-300">
+        <div class="flex items-center">
+            <i class="ri-error-warning-line text-red-500 mr-2"></i>
+            <p id="notificationText" class="text-sm text-gray-700"></p>
+        </div>
+    </div>
+
+    <script>
+        const mockUsers = [
+            { email: 'john.doe@example.com', password: 'Password123!' },
+            { email: 'jane.smith@example.com', password: 'SecurePass456!' }
+        ];
+
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const passwordToggle = document.getElementById('passwordToggle');
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                passwordToggle.className = 'ri-eye-off-line text-gray-400';
+            } else {
+                passwordInput.type = 'password';
+                passwordToggle.className = 'ri-eye-line text-gray-400';
+            }
+        }
+
+        function toggleRegisterPassword() {
+            const passwordInput = document.getElementById('registerPassword');
+            const passwordToggle = document.getElementById('registerPasswordToggle');
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                passwordToggle.className = 'ri-eye-off-line text-gray-400';
+            } else {
+                passwordInput.type = 'password';
+                passwordToggle.className = 'ri-eye-line text-gray-400';
+            }
+        }
+
+        function toggleForm() {
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            loginForm.classList.toggle('hidden');
+            registerForm.classList.toggle('hidden');
+        }
+
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            const notificationText = document.getElementById('notificationText');
+            notificationText.textContent = message;
+            notification.classList.remove('translate-x-full');
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+            }, 3000);
+        }
+
+        function checkPasswordStrength(password) {
+            const strengthBars = document.querySelectorAll('.password-strength');
+            const hasLower = /[a-z]/.test(password);
+            const hasUpper = /[A-Z]/.test(password);
+            const hasNumber = /\d/.test(password);
+            const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+            const length = password.length;
+
+            let strength = 0;
+            if (length >= 8) strength++;
+            if (hasLower && hasUpper) strength++;
+            if (hasNumber && hasSpecial) strength++;
+
+            strengthBars.forEach((bar, index) => {
+                if (index < strength) {
+                    bar.style.width = '100%';
+                    bar.className = `password-strength rounded-full flex-1 ${
+                        strength === 1 ? 'bg-red-500' : strength === 2 ? 'bg-yellow-500' : 'bg-green-500'
+                    }`;
+                } else {
+                    bar.style.width = '100%';
+                    bar.className = 'password-strength bg-gray-200 rounded-full flex-1';
+                }
+            });
+        }
+
+        document.getElementById('authForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const user = mockUsers.find(u => u.email === email && u.password === password);
+            if (user) {
+                showNotification('Successfully logged in!');
+            } else {
+                showNotification('Invalid email or password');
+            }
+        });
+
+        document.getElementById('registerAuthForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (password !== confirmPassword) {
+                showNotification('Passwords do not match');
+                return;
+            }
+
+            if (mockUsers.some(u => u.email === email)) {
+                showNotification('Email already exists');
+                return;
+            }
+
+            mockUsers.push({ email, password });
+            showNotification('Account created successfully!');
+            toggleForm();
+        });
+    </script>
+</body>
+</html>

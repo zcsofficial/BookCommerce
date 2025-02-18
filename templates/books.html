@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Store</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
+    <style>
+        :where([class^="ri-"])::before { content: "\f3c2"; }
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #57b5e7;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#57b5e7',
+                        secondary: '#8dd3c7'
+                    },
+                    borderRadius: {
+                        'none': '0px',
+                        'sm': '4px',
+                        DEFAULT: '8px',
+                        'md': '12px',
+                        'lg': '16px',
+                        'xl': '20px',
+                        '2xl': '24px',
+                        '3xl': '32px',
+                        'full': '9999px',
+                        'button': '8px'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-white min-h-screen">
+    <nav class="border-b">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <a href="#" class="text-2xl font-['Pacifico'] text-primary">logo</a>
+                </div>
+                
+                <div class="flex-1 max-w-2xl mx-8">
+                    <div class="relative">
+                        <input type="text" placeholder="Search for books, authors, or genres..." class="w-full px-4 py-2 text-sm border rounded-full focus:outline-none focus:border-primary">
+                        <button class="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center text-gray-400">
+                            <i class="ri-search-line"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button class="w-10 h-10 flex items-center justify-center text-gray-600 hover:text-primary">
+                        <i class="ri-user-line text-xl"></i>
+                    </button>
+                    <div class="relative">
+                        <button class="w-10 h-10 flex items-center justify-center text-gray-600 hover:text-primary">
+                            <i class="ri-shopping-cart-line text-xl"></i>
+                        </button>
+                        <span class="absolute -top-1 -right-1 w-5 h-5 flex items-center justify-center bg-primary text-white text-xs rounded-full">3</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <div class="flex gap-8">
+            <div class="w-64 flex-shrink-0">
+                <div class="sticky top-8">
+                    <div class="bg-white rounded-lg shadow-sm border p-4">
+                        <h3 class="font-semibold mb-4">Filters</h3>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <h4 class="font-medium mb-2">Categories</h4>
+                                <div class="space-y-2">
+                                    <label class="flex items-center">
+                                        <input type="checkbox" class="w-4 h-4 rounded text-primary">
+                                        <span class="ml-2 text-sm">Fiction</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="checkbox" class="w-4 h-4 rounded text-primary">
+                                        <span class="ml-2 text-sm">Non-Fiction</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="checkbox" class="w-4 h-4 rounded text-primary">
+                                        <span class="ml-2 text-sm">Children's Books</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="checkbox" class="w-4 h-4 rounded text-primary">
+                                        <span class="ml-2 text-sm">Academic</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h4 class="font-medium mb-2">Price Range</h4>
+                                <input type="range" class="range-slider w-full" min="0" max="100" value="50">
+                                <div class="flex justify-between text-sm mt-1">
+                                    <span>$0</span>
+                                    <span>$100</span>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h4 class="font-medium mb-2">Rating</h4>
+                                <div class="space-y-2">
+                                    <label class="flex items-center">
+                                        <input type="checkbox" class="w-4 h-4 rounded text-primary">
+                                        <span class="ml-2 flex items-center text-sm">
+                                            <i class="ri-star-fill text-yellow-400"></i>
+                                            <i class="ri-star-fill text-yellow-400"></i>
+                                            <i class="ri-star-fill text-yellow-400"></i>
+                                            <i class="ri-star-fill text-yellow-400"></i>
+                                            <i class="ri-star-fill text-yellow-400"></i>
+                                        </span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="checkbox" class="w-4 h-4 rounded text-primary">
+                                        <span class="ml-2 flex items-center text-sm">
+                                            <i class="ri-star-fill text-yellow-400"></i>
+                                            <i class="ri-star-fill text-yellow-400"></i>
+                                            <i class="ri-star-fill text-yellow-400"></i>
+                                            <i class="ri-star-fill text-yellow-400"></i>
+                                            <i class="ri-star-line text-gray-300"></i>
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h4 class="font-medium mb-2">Format</h4>
+                                <div class="space-y-2">
+                                    <label class="flex items-center">
+                                        <input type="checkbox" class="w-4 h-4 rounded text-primary">
+                                        <span class="ml-2 text-sm">Hardcover</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="checkbox" class="w-4 h-4 rounded text-primary">
+                                        <span class="ml-2 text-sm">Paperback</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="checkbox" class="w-4 h-4 rounded text-primary">
+                                        <span class="ml-2 text-sm">E-Book</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="flex-1">
+                <section class="mb-12">
+                    <h2 class="text-2xl font-semibold mb-6">Bestsellers</h2>
+                    <div class="grid grid-cols-4 gap-6">
+                        <div class="group">
+                            <div class="relative aspect-[3/4] rounded-lg overflow-hidden mb-3">
+                                <img src="https://public.readdy.ai/ai/img_res/12b65da1588b281756c507aec5aa8a2d.jpg" class="w-full h-full object-cover">
+                                <div class="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <button class="bg-white text-gray-900 px-4 py-2 rounded-button text-sm font-medium">Quick View</button>
+                                </div>
+                            </div>
+                            <h3 class="font-medium mb-1">The Silent Echo</h3>
+                            <p class="text-sm text-gray-600 mb-1">by Sarah Mitchell</p>
+                            <div class="flex items-center mb-2">
+                                <i class="ri-star-fill text-yellow-400"></i>
+                                <i class="ri-star-fill text-yellow-400"></i>
+                                <i class="ri-star-fill text-yellow-400"></i>
+                                <i class="ri-star-fill text-yellow-400"></i>
+                                <i class="ri-star-half-fill text-yellow-400"></i>
+                                <span class="text-sm text-gray-600 ml-1">(124)</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="font-medium">$24.99</span>
+                                <button class="text-primary hover:text-primary/80">
+                                    <i class="ri-shopping-cart-line text-xl"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="group">
+                            <div class="relative aspect-[3/4] rounded-lg overflow-hidden mb-3">
+                                <img src="https://public.readdy.ai/ai/img_res/169e7c872402992c6cfccd899425073b.jpg" class="w-full h-full object-cover">
+                                <div class="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <button class="bg-white text-gray-900 px-4 py-2 rounded-button text-sm font-medium">Quick View</button>
+                                </div>
+                            </div>
+                            <h3 class="font-medium mb-1">Digital Transformation</h3>
+                            <p class="text-sm text-gray-600 mb-1">by Michael Anderson</p>
+                            <div class="flex items-center mb-2">
+                                <i class="ri-star-fill text-yellow-400"></i>
+                                <i class="ri-star-fill text-yellow-400"></i>
+                                <i class="ri-star-fill text-yellow-400"></i>
+                                <i class="ri-star-fill text-yellow-400"></i>
+                                <i class="ri-star-line text-gray-300"></i>
+                                <span class="text-sm text-gray-600 ml-1">(89)</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="font-medium">$29.99</span>
+                                <button class="text-primary hover:text-primary/80">
+                                    <i class="ri-shopping-cart-line text-xl"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="group">
+                            <div class="relative aspect-[3/4] rounded-lg overflow-hidden mb-3">
+                                <img src="https://public.readdy.ai/ai/img_res/bede417ce1aec4174275b4d58495a6ab.jpg" class="w-full h-full object-cover">
+                                <div class="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <button class="bg-white text-gray-900 px-4 py-2 rounded-button text-sm font-medium">Quick View</button>
+                                </div>
+                            </div>
+                            <h3 class="font-medium mb-1">The Last Witness</h3>
+                            <p class="text-sm text-gray-600 mb-1">by James Patterson</p>
+                            <div class="flex items-center mb-2">
+                                <i class="ri-star-fill text-yellow-400"></i>
+                                <i class="ri-star-fill text-yellow-400"></i>
+                                <i class="ri-star-fill text-yellow-400"></i>
+                                <i class="ri-star-fill text-yellow-400"></i>
+                                <i class="ri-star-fill text-yellow-400"></i>
+                                <span class="text-sm text-gray-600 ml-1">(256)</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="font-medium">$19.99</span>
+                                <button class="text-primary hover:text-primary/80">
+                                    <i class="ri-shopping-cart-line text-xl"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="group">
+                            <div class="relative aspect-[3/4] rounded-lg overflow-hidden mb-3">
+                                <img src="https://public.readdy.ai/ai/img_res/6e9a38e371da63719c8a58fcb8ba9b30.jpg" class="w-full h-full object-cover">
+                                <div class="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <button class="bg-white text-gray-900 px-4 py-2 rounded-button text-sm font-medium">Quick View</button>
+                                </div>
+                            </div>
+                            <h3 class="font-medium mb-1">Mindful Living</h3>
+                            <p class="text-sm text-gray-600 mb-1">by Emma Thompson</p>
+                            <div class="flex items-center mb-2">
+                                <i class="ri-star-fill text-yellow-400"></i>
+                                <i class="ri-star-fill text-yellow-400"></i>
+                                <i class="ri-star-fill text-yellow-400"></i>
+                                <i class="ri-star-fill text-yellow-400"></i>
+                                <i class="ri-star-half-fill text-yellow-400"></i>
+                                <span class="text-sm text-gray-600 ml-1">(167)</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="font-medium">$21.99</span>
+                                <button class="text-primary hover:text-primary/80">
+                                    <i class="ri-shopping-cart-line text-xl"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="mb-12">
+                    <h2 class="text-2xl font-semibold mb-6">New Arrivals</h2>
+                    <div class="grid grid-cols-4 gap-6">
+                        <div class="group">
+                            <div class="relative aspect-[3/4] rounded-lg overflow-hidden mb-3">
+                                <img src="https://public.readdy.ai/ai/img_res/6e366448982ca3fca09656f7f8f2ad44.jpg" class="w-full h-full object-cover">
+                                <div class="absolute top-2 right-2 bg-primary text-white px-2 py-1 text-xs rounded-full">New</div>
+                                <div class="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <button class="bg-white text-gray-900 px-4 py-2 rounded-button text-sm font-medium">Quick View</button>
+                                </div>
+                            </div>
+                            <h3 class="font-medium mb-1">Quantum Dreams</h3>
+                            <p class="text-sm text-gray-600 mb-1">by Robert Chen</p>
+                            <div class="flex items-center mb-2">
+                                <i class="ri-star-fill text-yellow-400"></i>
+                                <i class="ri-star-fill text-yellow-400"></i>
+                                <i class="ri-star-fill text-yellow-400"></i>
+                                <i class="ri-star-fill text-yellow-400"></i>
+                                <i class="ri-star-line text-gray-300"></i>
+                                <span class="text-sm text-gray-600 ml-1">(42)</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="font-medium">$26.99</span>
+                                <button class="text-primary hover:text-primary/80">
+                                    <i class="ri-shopping-cart-line text-xl"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="group">
+                            <div class="relative aspect-[3/4] rounded-lg overflow-hidden mb-3">
+                                <img src="https://public.readdy.ai/ai/img_res/593b8390307c5171e25bc156126d3dba.jpg" class="w-full h-full object-cover">
+                                <div class="absolute top-2 right-2 bg-primary text-white px-2 py-1 text-xs rounded-full">New</div>
+                                <div class="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <button class="bg-white text-gray-900 px-4 py-2 rounded-button text-sm font-medium">Quick View</button>
+                                </div>
+                            </div>
+                            <h3 class="font-medium mb-1">Summer's Promise</h3>
+                            <p class="text-sm text-gray-600 mb-1">by Laura Williams</p>
+                            <div class="flex items-center mb-2">
+                                <i class="ri-star-fill text-yellow-400"></i>
+                                <i class="ri-star-fill text-yellow-400"></i>
+                                <i class="ri-star-fill text-yellow-400"></i>
+                                <i class="ri-star-fill text-yellow-400"></i>
+                                <i class="ri-star-half-fill text-yellow-400"></i>
+                                <span class="text-sm text-gray-600 ml-1">(28)</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="font-medium">$18.99</span>
+                                <button class="text-primary hover:text-primary/80">
+                                    <i class="ri-shopping-cart-line text-xl"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="group">
+                            <div class="relative aspect-[3/4] rounded-lg overflow-hidden mb-3">
+                                <img src="https://public.readdy.ai/ai/img_res/24ab6dacdb161a97e54de3db311d56a7.jpg" class="w-full h-full object-cover">
+                                <div class="absolute top-2 right-2 bg-primary text-white px-2 py-1 text-xs rounded-full">New</div>
+                                <div class="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <button class="bg-white text-gray-900 px-4 py-2 rounded-button text-sm font-medium">Quick View</button>
+                                </div>
+                            </div>
+                            <h3 class="font-medium mb-1">The Victorian Secret</h3>
+                            <p class="text-sm text-gray-600 mb-1">by Victoria Hughes</p>
+                            <div class="flex items-center mb-2">
+                                <i class="ri-star-fill text-yellow-400"></i>
+                                <i class="ri-star-fill text-yellow-400"></i>
+                                <i class="ri-star-fill text-yellow-400"></i>
+                                <i class="ri-star-fill text-yellow-400"></i>
+                                <i class="ri-star-line text-gray-300"></i>
+                                <span class="text-sm text-gray-600 ml-1">(15)</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="font-medium">$23.99</span>
+                                <button class="text-primary hover:text-primary/80">
+                                    <i class="ri-shopping-cart-line text-xl"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="group">
+                            <div class="relative aspect-[3/4] rounded-lg overflow-hidden mb-3">
+                                <img src="https://public.readdy.ai/ai/img_res/6b588b90a16444e27381234cedcf62e0.jpg" class="w-full h-full object-cover">
+                                <div class="absolute top-2 right-2 bg-primary text-white px-2 py-1 text-xs rounded-full">New</div>
+                                <div class="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <button class="bg-white text-gray-900 px-4 py-2 rounded-button text-sm font-medium">Quick View</button>
+                                </div>
+                            </div>
+                            <h3 class="font-medium mb-1">Modern Kitchen</h3>
+                            <p class="text-sm text-gray-600 mb-1">by Chef David Lee</p>
+                            <div class="flex items-center mb-2">
+                                <i class="ri-star-fill text-yellow-400"></i>
+                                <i class="ri-star-fill text-yellow-400"></i>
+                                <i class="ri-star-fill text-yellow-400"></i>
+                                <i class="ri-star-fill text-yellow-400"></i>
+                                <i class="ri-star-fill text-yellow-400"></i>
+                                <span class="text-sm text-gray-600 ml-1">(7)</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="font-medium">$32.99</span>
+                                <button class="text-primary hover:text-primary/80">
+                                    <i class="ri-shopping-cart-line text-xl"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section>
+                    <h2 class="text-2xl font-semibold mb-6">Customer Reviews</h2>
+                    <div class="grid grid-cols-2 gap-6">
+                        <div class="bg-white rounded-lg shadow-sm border p-6">
+                            <div class="flex items-center mb-4">
+                                <div class="w-12 h-12 rounded-full overflow-hidden mr-4">
+                                    <img src="https://public.readdy.ai/ai/img_res/53538daa218366ea50c85b83092f7c6d.jpg" class="w-full h-full object-cover">
+                                </div>
+                                <div>
+                                    <h4 class="font-medium">Emily Richardson</h4>
+                                    <div class="flex items-center">
+                                        <i class="ri-star-fill text-yellow-400"></i>
+                                        <i class="ri-star-fill text-yellow-400"></i>
+                                        <i class="ri-star-fill text-yellow-400"></i>
+                                        <i class="ri-star-fill text-yellow-400"></i>
+                                        <i class="ri-star-fill text-yellow-400"></i>
+                                    </div>
+                                </div>
+                                <div class="ml-auto">
+                                    <span class="text-sm text-gray-500">2 days ago</span>
+                                </div>
+                            </div>
+                            <p class="text-gray-600">"The Silent Echo exceeded my expectations. The author's writing style is captivating, and the plot twists kept me guessing until the very end. Highly recommended for mystery lovers!"</p>
+                        </div>
+
+                        <div class="bg-white rounded-lg shadow-sm border p-6">
+                            <div class="flex items-center mb-4">
+                                <div class="w-12 h-12 rounded-full overflow-hidden mr-4">
+                                    <img src="https://public.readdy.ai/ai/img_res/1f2465394e635eb23121d76869f01fab.jpg" class="w-full h-full object-cover">
+                                </div>
+                                <div>
+                                    <h4 class="font-medium">Marcus Thompson</h4>
+                                    <div class="flex items-center">
+                                        <i class="ri-star-fill text-yellow-400"></i>
+                                        <i class="ri-star-fill text-yellow-400"></i>
+                                        <i class="ri-star-fill text-yellow-400"></i>
+                                        <i class="ri-star-fill text-yellow-400"></i>
+                                        <i class="ri-star-line text-gray-300"></i>
+                                    </div>
+                                </div>
+                                <div class="ml-auto">
+                                    <span class="text-sm text-gray-500">1 week ago</span>
+                                </div>
+                            </div>
+                            <p class="text-gray-600">"Digital Transformation is a comprehensive guide that helped me understand the complexities of modern business technology. The case studies are particularly insightful."</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const quickViewButtons = document.querySelectorAll('button:contains("Quick View")');
+            quickViewButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const bookDetails = this.closest('.group');
+                    const title = bookDetails.querySelector('h3').textContent;
+                    const author = bookDetails.querySelector('p').textContent;
+                    const price = bookDetails.querySelector('span').textContent;
+                    
+                    const modal = document.createElement('div');
+                    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+                    modal.innerHTML = `
+                        <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-xl font-semibold">${title}</h3>
+                                <button class="text-gray-500 hover:text-gray-700">
+                                    <i class="ri-close-line text-xl"></i>
+                                </button>
+                            </div>
+                            <div class="mb-4">
+                                <p class="text-gray-600">${author}</p>
+                                <p class="font-medium mt-2">${price}</p>
+                            </div>
+                            <p class="text-gray-600 mb-4">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+                            <button class="w-full bg-primary text-white py-2 rounded-button hover:bg-primary/90">Add to Cart</button>
+                        </div>
+                    `;
+                    
+                    document.body.appendChild(modal);
+                    
+                    modal.querySelector('button').addEventListener('click', () => {
+                        modal.remove();
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>

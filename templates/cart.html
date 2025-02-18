@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Cart | Bookstore</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
+    <style>:where([class^="ri-"])::before { content: "\f3c2"; }</style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4F46E5',
+                        secondary: '#F59E0B'
+                    },
+                    borderRadius: {
+                        'none': '0px',
+                        'sm': '4px',
+                        DEFAULT: '8px',
+                        'md': '12px',
+                        'lg': '16px',
+                        'xl': '20px',
+                        '2xl': '24px',
+                        '3xl': '32px',
+                        'full': '9999px',
+                        'button': '8px'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <div class="flex items-center justify-between mb-8">
+            <h1 class="text-2xl font-semibold text-gray-900">Shopping Cart</h1>
+            <a href="#" class="text-primary hover:text-primary/80 flex items-center gap-2">
+                <i class="ri-arrow-left-line w-5 h-5 flex items-center justify-center"></i>
+                <span>Continue Shopping</span>
+            </a>
+        </div>
+
+        <div class="flex flex-col lg:flex-row gap-8">
+            <div class="flex-1">
+                <div id="cartItems" class="space-y-4">
+                </div>
+            </div>
+            <div class="w-full lg:w-96">
+                <div class="bg-white rounded shadow-sm p-6 sticky top-4">
+                    <h2 class="text-lg font-semibold mb-4">Order Summary</h2>
+                    
+                    <div class="space-y-4 mb-6">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Subtotal</span>
+                            <span id="subtotal" class="font-medium">$0.00</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Shipping</span>
+                            <span id="shipping" class="font-medium">$4.99</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Tax</span>
+                            <span id="tax" class="font-medium">$0.00</span>
+                        </div>
+                        
+                        <div class="border-t pt-4">
+                            <div class="flex justify-between">
+                                <span class="font-semibold">Total</span>
+                                <span id="total" class="font-semibold">$0.00</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <button id="promoToggle" class="text-primary hover:text-primary/80 text-sm flex items-center gap-2">
+                            <i class="ri-price-tag-3-line w-4 h-4 flex items-center justify-center"></i>
+                            <span>Add promotional code</span>
+                        </button>
+                        <div id="promoForm" class="hidden mt-4">
+                            <div class="flex gap-2">
+                                <input type="text" placeholder="Enter code" class="flex-1 px-3 py-2 border rounded-button focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm">
+                                <button class="px-4 py-2 bg-primary text-white rounded-button hover:bg-primary/90 text-sm whitespace-nowrap">Apply</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button id="checkoutBtn" class="w-full bg-primary text-white py-3 rounded-button hover:bg-primary/90 font-medium !rounded-button whitespace-nowrap">
+                        Proceed to Checkout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="emptyCart" class="hidden text-center py-16">
+        <div class="w-16 h-16 mx-auto mb-4 text-gray-400 flex items-center justify-center">
+            <i class="ri-shopping-cart-line ri-2x"></i>
+        </div>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">Your cart is empty</h3>
+        <p class="text-gray-500 mb-6">Looks like you haven't added anything to your cart yet</p>
+        <a href="#" class="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-button text-white bg-primary hover:bg-primary/90 !rounded-button whitespace-nowrap">
+            Start Shopping
+        </a>
+    </div>
+
+    <script>
+        const mockBooks = [
+            {
+                id: 1,
+                title: "The Midnight Library",
+                author: "Matt Haig",
+                price: 24.99,
+                quantity: 1,
+                image: "https://public.readdy.ai/ai/img_res/89979aecb5c4601e878ee3b297cc34bd.jpg"
+            },
+            {
+                id: 2,
+                title: "Project Hail Mary",
+                author: "Andy Weir",
+                price: 29.99,
+                quantity: 2,
+                image: "https://public.readdy.ai/ai/img_res/f34de5491b0ecea0fd500c57d2797d15.jpg"
+            }
+        ];
+
+        function renderCart() {
+            const cartItems = document.getElementById('cartItems');
+            const emptyCart = document.getElementById('emptyCart');
+            
+            if (mockBooks.length === 0) {
+                cartItems.classList.add('hidden');
+                emptyCart.classList.remove('hidden');
+                return;
+            }
+
+            cartItems.classList.remove('hidden');
+            emptyCart.classList.add('hidden');
+            
+            cartItems.innerHTML = mockBooks.map(book => `
+                <div class="flex gap-6 p-4 bg-white rounded shadow-sm">
+                    <img src="${book.image}" alt="${book.title}" class="w-24 h-36 object-cover rounded">
+                    <div class="flex-1">
+                        <div class="flex justify-between">
+                            <div>
+                                <h3 class="font-medium text-gray-900">${book.title}</h3>
+                                <p class="text-gray-500 text-sm">${book.author}</p>
+                            </div>
+                            <button class="text-gray-400 hover:text-gray-500">
+                                <i class="ri-delete-bin-line w-5 h-5 flex items-center justify-center"></i>
+                            </button>
+                        </div>
+                        <div class="mt-4 flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <button class="w-8 h-8 flex items-center justify-center border rounded-button hover:bg-gray-50" onclick="updateQuantity(${book.id}, -1)">
+                                    <i class="ri-subtract-line"></i>
+                                </button>
+                                <span class="w-8 text-center">${book.quantity}</span>
+                                <button class="w-8 h-8 flex items-center justify-center border rounded-button hover:bg-gray-50" onclick="updateQuantity(${book.id}, 1)">
+                                    <i class="ri-add-line"></i>
+                                </button>
+                            </div>
+                            <span class="font-medium">$${(book.price * book.quantity).toFixed(2)}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            updateTotals();
+        }
+
+        function updateQuantity(id, change) {
+            const book = mockBooks.find(b => b.id === id);
+            if (book) {
+                book.quantity = Math.max(1, book.quantity + change);
+                renderCart();
+            }
+        }
+
+        function updateTotals() {
+            const subtotal = mockBooks.reduce((sum, book) => sum + book.price * book.quantity, 0);
+            const shipping = 4.99;
+            const tax = subtotal * 0.08;
+            const total = subtotal + shipping + tax;
+            document.getElementById('subtotal').textContent = `$${subtotal.toFixed(2)}`;
+            document.getElementById('shipping').textContent = `$${shipping.toFixed(2)}`;
+            document.getElementById('tax').textContent = `$${tax.toFixed(2)}`;
+            document.getElementById('total').textContent = `$${total.toFixed(2)}`;
+        }
+
+        document.getElementById('promoToggle').addEventListener('click', function() {
+            const promoForm = document.getElementById('promoForm');
+            promoForm.classList.toggle('hidden');
+        });
+
+        renderCart();
+    </script>
+</body>
+</html>
