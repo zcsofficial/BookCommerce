@@ -1,90 +1,64 @@
 <?php
+session_start();
 include('config.php');
 
-// Function to fetch books from the database with search and filter functionality
-function getBooks($conn, $searchTerm = '', $selectedCategories = [], $priceRange = [0, 100], $ratingFilter = null) {
-    // Construct SQL query with filters
-    $sql = "SELECT books.id, books.title, books.author, books.price, books.book_condition, books.image_url, categories.name AS category_name
-            FROM books 
-            JOIN categories ON books.category_id = categories.id
-            WHERE books.title LIKE ?";
-
-    // Adding filters
-    if (!empty($selectedCategories)) {
-        $categoriesPlaceholder = implode(',', array_fill(0, count($selectedCategories), '?'));
-        $sql .= " AND books.category_id IN ($categoriesPlaceholder)";
-    }
-
-    if ($priceRange[0] >= 0 && $priceRange[1] <= 100) {
-        $sql .= " AND books.price BETWEEN ? AND ?";
-    }
-
-    if ($ratingFilter) {
-        $sql .= " AND books.rating >= ?";
-    }
-
-    $stmt = $conn->prepare($sql);
-    $searchTerm = "%$searchTerm%";
-
-    // Initialize the types string and parameters array
-    $types = "s"; // For the search term (string)
-    $params = [$searchTerm];
-
-    // Add category filter parameters if selected
-    if (!empty($selectedCategories)) {
-        $types .= str_repeat("i", count($selectedCategories)); // For category IDs (integers)
-        $params = array_merge($params, $selectedCategories);
-    }
-
-    // Add price range parameters
-    $params[] = $priceRange[0]; // For the minimum price
-    $params[] = $priceRange[1]; // For the maximum price
-    $types .= "ii"; // For the price range (two integers)
-
-    // Add rating filter if provided
-    if ($ratingFilter) {
-        $params[] = $ratingFilter;
-        $types .= "i"; // For rating (integer)
-    }
-
-    // Bind dynamically
-    $stmt->bind_param($types, ...$params);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    $books = [];
-    if ($result->num_rows > 0) {
-        while ($row = $result->fetch_assoc()) {
-            $books[] = $row;
-        }
-    }
-    return $books;
+// Check if the user is logged in
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
 }
 
-// Search and filter handling
-$searchTerm = isset($_GET['q']) ? $_GET['q'] : '';
-$selectedCategories = isset($_GET['categories']) ? explode(',', $_GET['categories']) : [];
-$minPrice = isset($_GET['min_price']) ? $_GET['min_price'] : 0;
-$maxPrice = isset($_GET['max_price']) ? $_GET['max_price'] : 100;
-$ratingFilter = isset($_GET['rating']) ? $_GET['rating'] : null;
+$message = ""; // To display success or error messages
 
-// Fetch books with the applied filters
-$books = getBooks($conn, $searchTerm, $selectedCategories, [$minPrice, $maxPrice], $ratingFilter);
+// Handle book submission
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $title = trim($_POST['title']);
+    $author = trim($_POST['author']);
+    $price = floatval($_POST['price']);
+    $book_condition = trim($_POST['book_condition']);
+    $category_id = intval($_POST['category_id']);
+    $user_id = $_SESSION['user_id'];
 
-// Add to cart functionality (session-based cart system)
-session_start();
-if (isset($_GET['add_to_cart'])) {
-    $book_id = $_GET['add_to_cart'];
-    if (!isset($_SESSION['cart'])) {
-        $_SESSION['cart'] = [];
+    // Handle image upload
+    $image_url = "";
+    if (isset($_FILES["book_image"]) && $_FILES["book_image"]["error"] == 0) {
+        $target_dir = "uploads/";
+        $image_name = basename($_FILES["book_image"]["name"]);
+        $target_file = $target_dir . time() . "_" . $image_name;
+        $imageFileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
+        $allowed_types = ["jpg", "jpeg", "png", "gif"];
+
+        if (in_array($imageFileType, $allowed_types)) {
+            if (move_uploaded_file($_FILES["book_image"]["tmp_name"], $target_file)) {
+                $image_url = $target_file;
+            } else {
+                $message = "Error uploading image.";
+            }
+        } else {
+            $message = "Only JPG, JPEG, PNG, and GIF files are allowed.";
+        }
     }
 
-    // Check if the book is already in the cart
-    if (isset($_SESSION['cart'][$book_id])) {
-        $_SESSION['cart'][$book_id]++;
+    if (!empty($title) && !empty($author) && $price > 0 && !empty($book_condition) && $category_id > 0) {
+        $stmt = $conn->prepare("INSERT INTO books (title, author, price, book_condition, image_url, category_id) VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("ssdssi", $title, $author, $price, $book_condition, $image_url, $category_id);
+
+        if ($stmt->execute()) {
+            $message = "Book listed successfully!";
+        } else {
+            $message = "Error listing book.";
+        }
+        $stmt->close();
     } else {
-        $_SESSION['cart'][$book_id] = 1;
+        $message = "All fields are required!";
     }
+}
+
+// Fetch categories for dropdown
+$categories = [];
+$result = $conn->query("SELECT id, name FROM categories");
+while ($row = $result->fetch_assoc()) {
+    $categories[] = $row;
 }
 ?>
 
@@ -93,140 +67,115 @@ if (isset($_GET['add_to_cart'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Book Store</title>
+    <title>Sell a Book</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4F46E5',
+                        secondary: '#10B981'
+                    },
+                    borderRadius: {
+                        'none': '0px',
+                        'sm': '4px',
+                        DEFAULT: '8px',
+                        'md': '12px',
+                        'lg': '16px',
+                        'xl': '20px',
+                        '2xl': '24px',
+                        '3xl': '32px',
+                        'full': '9999px',
+                        'button': '8px'
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
-    <style>
-        :where([class^="ri-"])::before { content: "\f3c2"; }
-        input[type="number"]::-webkit-inner-spin-button,
-        input[type="number"]::-webkit-outer-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-        .range-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 16px;
-            height: 16px;
-            background: #57b5e7;
-            border-radius: 50%;
-            cursor: pointer;
-        }
-    </style>
 </head>
-<body class="bg-white min-h-screen">
-    <nav class="border-b">
-        <div class="max-w-7xl mx-auto px-4">
-            <div class="flex items-center justify-between h-16">
-                <div class="flex items-center">
-                    <a href="#" class="text-2xl font-['Pacifico'] text-primary">logo</a>
+<body class="bg-gray-100 min-h-screen">
+
+<!-- Navigation Bar -->
+<nav class="bg-white shadow-md fixed top-0 left-0 w-full z-50">
+    <div class="max-w-7xl mx-auto px-4">
+        <div class="flex justify-between items-center h-16">
+            <div class="flex items-center space-x-6">
+                <a href="index.php" class="font-['Pacifico'] text-2xl text-primary">BookCommerce</a>
+                <div class="hidden md:flex space-x-6">
+                    <a href="index.php" class="text-gray-900 hover:text-primary text-sm font-medium">Home</a>
+                    <a href="books.php" class="text-gray-900 hover:text-primary text-sm font-medium">Books</a>
+                    <a href="cart.php" class="text-gray-900 hover:text-primary text-sm font-medium">Cart</a>
+                    <a href="#" class="text-gray-900 hover:text-primary text-sm font-medium">Requests</a>
                 </div>
-                
-                <div class="flex-1 max-w-2xl mx-8">
-                    <div class="relative">
-                        <form action="index.php" method="get">
-                            <input type="text" name="q" value="<?php echo $searchTerm; ?>" placeholder="Search for books, authors, or genres..." class="w-full px-4 py-2 text-sm border rounded-full focus:outline-none focus:border-primary">
-                            <button type="submit" class="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center text-gray-400">
-                                <i class="ri-search-line"></i>
-                            </button>
-                        </form>
-                    </div>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <a href="account.php" class="w-10 h-10 flex items-center justify-center text-gray-600 hover:text-primary">
-                        <i class="ri-user-line text-xl"></i>
-                    </a>
-                    <div class="relative">
-                        <a href="cart.php" class="w-10 h-10 flex items-center justify-center text-gray-600 hover:text-primary">
-                            <i class="ri-shopping-cart-line text-xl"></i>
+            </div>
+            <div class="flex items-center space-x-4">
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-gray-900 font-medium"><?php echo $_SESSION['user_full_name'] ?? 'User'; ?></span>
+                        <a href="account.php" class="text-gray-900 hover:text-primary">
+                            <i class="ri-user-line text-xl"></i>
                         </a>
-                        <span class="absolute -top-1 -right-1 w-5 h-5 flex items-center justify-center bg-primary text-white text-xs rounded-full">3</span>
+                        <a href="logout.php" class="text-gray-900 hover:text-primary">Logout</a>
                     </div>
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <div class="max-w-7xl mx-auto px-4 py-8">
-        <div class="flex gap-8">
-            <div class="w-64 flex-shrink-0">
-                <div class="sticky top-8">
-                    <div class="bg-white rounded-lg shadow-sm border p-4">
-                        <h3 class="font-semibold mb-4">Filters</h3>
-                        
-                        <div class="space-y-4">
-                            <div>
-                                <h4 class="font-medium mb-2">Categories</h4>
-                                <div class="space-y-2">
-                                    <form action="index.php" method="get">
-                                        <input type="hidden" name="q" value="<?php echo $searchTerm; ?>">
-                                        <label class="flex items-center">
-                                            <input type="checkbox" name="categories[]" value="1" class="w-4 h-4 rounded text-primary" <?php echo in_array('1', $selectedCategories) ? 'checked' : ''; ?>>
-                                            <span class="ml-2 text-sm">Fiction</span>
-                                        </label>
-                                        <label class="flex items-center">
-                                            <input type="checkbox" name="categories[]" value="2" class="w-4 h-4 rounded text-primary" <?php echo in_array('2', $selectedCategories) ? 'checked' : ''; ?>>
-                                            <span class="ml-2 text-sm">Non-Fiction</span>
-                                        </label>
-                                        <label class="flex items-center">
-                                            <input type="checkbox" name="categories[]" value="3" class="w-4 h-4 rounded text-primary" <?php echo in_array('3', $selectedCategories) ? 'checked' : ''; ?>>
-                                            <span class="ml-2 text-sm">Children's Books</span>
-                                        </label>
-                                    </form>
-                                </div>
-                            </div>
-
-                            <div>
-                                <h4 class="font-medium mb-2">Price Range</h4>
-                                <form action="index.php" method="get">
-                                    <input type="hidden" name="q" value="<?php echo $searchTerm; ?>">
-                                    <input type="range" class="range-slider w-full" name="min_price" min="0" max="100" value="<?php echo $minPrice; ?>">
-                                    <input type="range" class="range-slider w-full" name="max_price" min="0" max="100" value="<?php echo $maxPrice; ?>">
-                                    <div class="flex justify-between text-xs">
-                                        <span>$0</span>
-                                        <span>$100</span>
-                                    </div>
-                                </form>
-                            </div>
-
-                            <div>
-                                <h4 class="font-medium mb-2">Rating</h4>
-                                <form action="index.php" method="get">
-                                    <input type="hidden" name="q" value="<?php echo $searchTerm; ?>">
-                                    <label class="flex items-center">
-                                        <input type="radio" name="rating" value="4" class="w-4 h-4 rounded text-primary" <?php echo $ratingFilter == 4 ? 'checked' : ''; ?>>
-                                        <span class="ml-2 text-sm">4 stars & up</span>
-                                    </label>
-                                    <label class="flex items-center">
-                                        <input type="radio" name="rating" value="3" class="w-4 h-4 rounded text-primary" <?php echo $ratingFilter == 3 ? 'checked' : ''; ?>>
-                                        <span class="ml-2 text-sm">3 stars & up</span>
-                                    </label>
-                                </form>
-                            </div>
-                        </div>
+                    <div class="relative">
+                        <a href="cart.php" class="text-gray-900 hover:text-primary">
+                            <i class="ri-shopping-cart-line text-xl"></i>
+                            <span class="absolute top-0 right-0 bg-primary text-white text-xs px-2 py-1 rounded-full">
+                                <?php echo $cart_count ?? 0; ?>
+                            </span>
+                        </a>
                     </div>
-                </div>
-            </div>
-            
-            <div class="flex-1">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    <?php foreach ($books as $book): ?>
-                    <div class="bg-white rounded-lg shadow-sm border p-4">
-                        <img src="<?php echo $book['image_url']; ?>" alt="<?php echo $book['title']; ?>" class="w-full h-48 object-cover rounded-t-lg">
-                        <div class="p-4">
-                            <h4 class="font-semibold text-lg mb-2"><?php echo $book['title']; ?></h4>
-                            <p class="text-sm text-gray-600"><?php echo $book['author']; ?></p>
-                            <p class="mt-2 text-xl font-semibold">$<?php echo number_format($book['price'], 2); ?></p>
-                            <div class="mt-4">
-                                <a href="index.php?add_to_cart=<?php echo $book['id']; ?>" class="text-white bg-primary py-2 px-4 rounded-full hover:bg-blue-700">Add to Cart</a>
-                            </div>
-                        </div>
-                    </div>
-                    <?php endforeach; ?>
-                </div>
+                <?php else: ?>
+                    <a href="login.php" class="text-gray-900 hover:text-primary">Login</a>
+                    <a href="register.php" class="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90">Register</a>
+                <?php endif; ?>
             </div>
         </div>
     </div>
+</nav>
+
+<div class="max-w-4xl mx-auto p-6 bg-white shadow-md rounded-md mt-20">
+    <h2 class="text-2xl font-bold mb-4">List Your Book for Sale</h2>
+
+    <?php if (!empty($message)): ?>
+        <div class="p-3 mb-4 text-white bg-blue-500 rounded">
+            <?php echo $message; ?>
+        </div>
+    <?php endif; ?>
+
+    <form action="sell_book.php" method="POST" enctype="multipart/form-data" class="space-y-4">
+        <div>
+            <label class="block font-medium">Book Title</label>
+            <input type="text" name="title" required class="w-full px-3 py-2 border rounded-md">
+        </div>
+
+        <div>
+            <label class="block font-medium">Author</label>
+            <input type="text" name="author" required class="w-full px-3 py-2 border rounded-md">
+        </div>
+
+        <div>
+            <label class="block font-medium">Price ($)</label>
+            <input type="number" step="0.01" name="price" required class="w-full px-3 py-2 border rounded-md">
+        </div>
+
+        <div>
+            <label class="block font-medium">Condition</label>
+            <select name="book_condition" required class="w-full px-3 py-2 border rounded-md">
+                <option value="New">New</option>
+                <option value="Like New">Like New</option>
+                <option value="Used - Good">Used - Good</option>
+                <option value="Used - Acceptable">Used - Acceptable</option>
+            </select>
+        </div>
+
+        <button type="submit" class="w-full py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">List Book</button>
+    </form>
+</div>
 </body>
 </html>

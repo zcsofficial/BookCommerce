@@ -74,6 +74,7 @@ if (isset($_GET['logout'])) {
     exit();
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -120,53 +121,77 @@ if (isset($_GET['logout'])) {
     </style>
 </head>
 
-<body class="bg-gray-50">
+<body class="bg-gray-50 min-h-screen">
 
     <!-- Navigation Bar -->
-<nav class="bg-white shadow-sm fixed w-full z-50">
-    <div class="max-w-7xl mx-auto px-4">
-        <div class="flex justify-between h-16">
-            <div class="flex items-center">
-                <a href="index.php" class="font-['Pacifico'] text-2xl text-primary">BookCommerce</a>
-                <div class="hidden md:flex space-x-8 ml-10">
+    <nav class="bg-white shadow-md fixed w-full z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo and Hamburger Menu for Mobile -->
+                <div class="flex items-center">
+                    <button id="mobileMenuButton" class="md:hidden p-2 text-gray-900 hover:text-primary">
+                        <i class="ri-menu-line text-2xl"></i>
+                    </button>
+                    <a href="index.php" class="font-['Pacifico'] text-2xl text-primary ml-2 md:ml-0">BookCommerce</a>
+                </div>
+
+                <!-- Navigation Links (Hidden on Mobile, Shown on Medium and Up) -->
+                <div class="hidden md:flex md:items-center md:space-x-8">
                     <a href="index.php" class="text-gray-900 hover:text-primary px-3 py-2 text-sm font-medium">Home</a>
                     <a href="books.php" class="text-gray-900 hover:text-primary px-3 py-2 text-sm font-medium">Books</a>
                     <a href="cart.php" class="text-gray-900 hover:text-primary px-3 py-2 text-sm font-medium">Cart</a>
                     <a href="#" class="text-gray-900 hover:text-primary px-3 py-2 text-sm font-medium">Requests</a>
                 </div>
-            </div>
-            <div class="flex items-center space-x-4">
-                <?php if (isset($user_full_name)): ?>
-                    <div class="flex items-center space-x-2">
-                        <span class="text-gray-900 font-medium"><?php echo $user_full_name; ?></span>
-                        <a href="account.php" class="text-gray-900 hover:text-primary px-3 py-2 text-sm font-medium">
-                            <i class="ri-user-line text-xl"></i>
-                        </a>
-                        <a href="?logout=true" class="text-gray-900 hover:text-primary px-3 py-2 text-sm font-medium">
-                            Logout
-                        </a>
-                    </div>
 
-                    <!-- Cart Icon (only visible if user is logged in) -->
-                    <div class="relative">
-                        <button id="cartBtn" class="text-gray-900 hover:text-primary px-3 py-2 text-sm font-medium">
-                            <i class="ri-shopping-cart-line text-xl"></i>
-                            <span class="absolute top-0 right-0 rounded-full bg-primary text-white text-xs px-2 py-1">
-                                <?php echo $cart_count ?? 0; ?>
-                            </span>
-                        </button>
-                    </div>
+                <!-- User Actions and Cart -->
+                <div class="flex items-center space-x-4">
+                    <?php if (isset($user_full_name)): ?>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-gray-900 font-medium hidden md:inline"><?php echo $user_full_name; ?></span>
+                            <a href="account.php" class="text-gray-900 hover:text-primary px-3 py-2 text-sm font-medium">
+                                <i class="ri-user-line text-xl"></i>
+                            </a>
+                            <a href="?logout=true" class="text-gray-900 hover:text-primary px-3 py-2 text-sm font-medium hidden md:inline">
+                                Logout
+                            </a>
+                        </div>
+
+                        <!-- Cart Icon -->
+                        <div class="relative">
+                            <button id="cartBtn" class="text-gray-900 hover:text-primary px-3 py-2 text-sm font-medium">
+                                <i class="ri-shopping-cart-line text-xl"></i>
+                                <span class="absolute -top-1 -right-2 rounded-full bg-primary text-white text-xs px-2 py-1">
+                                    <?php echo $cart_count ?? 0; ?>
+                                </span>
+                            </button>
+                        </div>
+                    <?php else: ?>
+                        <a href="login.php" class="text-gray-900 hover:text-primary px-3 py-2 text-sm font-medium">Login</a>
+                        <a href="register.php" class="bg-primary text-white px-4 py-2 text-sm font-medium hover:bg-primary/90 rounded-md">Register</a>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <!-- Mobile Menu (Hidden by default, shown when hamburger is clicked) -->
+            <div id="mobileMenu" class="md:hidden hidden bg-white shadow-md absolute w-full top-16 left-0">
+                <a href="index.php" class="block text-gray-900 hover:text-primary px-4 py-2 text-sm font-medium border-b">Home</a>
+                <a href="books.php" class="block text-gray-900 hover:text-primary px-4 py-2 text-sm font-medium border-b">Books</a>
+                <a href="cart.php" class="block text-gray-900 hover:text-primary px-4 py-2 text-sm font-medium border-b">Cart</a>
+                <a href="#" class="block text-gray-900 hover:text-primary px-4 py-2 text-sm font-medium border-b">Requests</a>
+                <?php if (isset($user_full_name)): ?>
+                    <a href="account.php" class="block text-gray-900 hover:text-primary px-4 py-2 text-sm font-medium border-b">
+                        <i class="ri-user-line mr-2"></i> Account
+                    </a>
+                    <a href="?logout=true" class="block text-gray-900 hover:text-primary px-4 py-2 text-sm font-medium border-b">Logout</a>
                 <?php else: ?>
-                    <a href="login.php" class="text-gray-900 hover:text-primary px-3 py-2 text-sm font-medium">Login</a>
-                    <a href="register.php" class="bg-primary text-white px-4 py-2 text-sm font-medium hover:bg-primary/90">Register</a>
+                    <a href="login.php" class="block text-gray-900 hover:text-primary px-4 py-2 text-sm font-medium border-b">Login</a>
+                    <a href="register.php" class="block bg-primary text-white px-4 py-2 text-sm font-medium hover:bg-primary/90 rounded-md mx-4 my-2">Register</a>
                 <?php endif; ?>
             </div>
         </div>
-    </div>
-</nav>
+    </nav>
 
-
-    <!-- Main Content -->
+    <!-- Main Content with Padding to Avoid Overlap with Fixed Navbar -->
     <main class="pt-16 pb-12 bg-gray-50">
         <section class="relative bg-white overflow-hidden">
             <div class="max-w-7xl mx-auto">
@@ -224,29 +249,31 @@ if (isset($_GET['logout'])) {
             </div>
         </section>
 
-    <div class="max-w-7xl mx-auto px-4 py-16">
-        <h2 class="text-3xl font-semibold text-gray-900 mb-6">Featured Books</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <?php while ($book = $book_result->fetch_assoc()): ?>
-                <div class="bg-white rounded-lg shadow-md overflow-hidden">
-                    <img class="h-64 w-full object-cover" src="<?php echo htmlspecialchars($book['image_url']); ?>" alt="Book Cover">
-                    <div class="p-4">
-                        <h3 class="text-lg font-bold text-gray-900"><?php echo htmlspecialchars($book['title']); ?></h3>
-                        <p class="text-gray-500"><?php echo htmlspecialchars($book['author']); ?></p>
-                        <p class="mt-2 text-gray-900"><?php echo htmlspecialchars($book['category_name']); ?></p>
-                        <div class="mt-3 flex items-center justify-between">
-                            <span class="text-xl font-semibold text-primary"><?php echo number_format($book['price'], 2); ?> USD</span>
-                            <form action="index.php" method="post" class="flex items-center">
-                                <input type="hidden" name="book_id" value="<?php echo $book['id']; ?>">
-                                <input type="number" name="quantity" value="1" min="1" class="border border-gray-300 rounded-md px-2 py-1 w-16">
-                                <button type="submit" name="add_to_cart" class="bg-primary text-white px-4 py-2 rounded-md">Add to Cart</button>
-                            </form>
+        <div class="max-w-7xl mx-auto px-4 py-16">
+            <h2 class="text-3xl font-semibold text-gray-900 mb-6">Featured Books</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+                <?php while ($book = $book_result->fetch_assoc()): ?>
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                        <img class="h-64 w-full object-cover" src="<?php echo htmlspecialchars($book['image_url']); ?>" alt="Book Cover">
+                        <div class="p-4">
+                            <h3 class="text-lg font-bold text-gray-900"><?php echo htmlspecialchars($book['title']); ?></h3>
+                            <p class="text-gray-500"><?php echo htmlspecialchars($book['author']); ?></p>
+                            <p class="mt-2 text-gray-900"><?php echo htmlspecialchars($book['category_name']); ?></p>
+                            <div class="mt-3 flex items-center justify-between">
+                                <span class="text-xl font-semibold text-primary"><?php echo number_format($book['price'], 2); ?> USD</span>
+                                <form action="index.php" method="post" class="flex items-center">
+                                    <input type="hidden" name="book_id" value="<?php echo $book['id']; ?>">
+                                    <input type="number" name="quantity" value="1" min="1" class="border border-gray-300 rounded-md px-2 py-1 w-16">
+                                    <button type="submit" name="add_to_cart" class="bg-primary text-white px-4 py-2 rounded-md">Add to Cart</button>
+                                </form>
+                            </div>
                         </div>
                     </div>
-                </div>
-            <?php endwhile; ?>
+                <?php endwhile; ?>
+            </div>
         </div>
-    </div>
+
+    </main>
 
     <!-- Cart Modal -->
     <div id="cartModal" class="hidden fixed inset-0 z-50 bg-black bg-opacity-50 flex justify-center items-center">
@@ -263,6 +290,18 @@ if (isset($_GET['logout'])) {
     </div>
 
     <script>
+        // Toggle mobile menu
+        document.getElementById('mobileMenuButton').addEventListener('click', function() {
+            document.getElementById('mobileMenu').classList.toggle('hidden');
+        });
+
+        // Close mobile menu when a link is clicked
+        document.querySelectorAll('#mobileMenu a').forEach(link => {
+            link.addEventListener('click', function() {
+                document.getElementById('mobileMenu').classList.add('hidden');
+            });
+        });
+
         // Show Cart Modal
         document.getElementById("cartBtn").addEventListener("click", function() {
             document.getElementById("cartModal").classList.remove("hidden");
@@ -285,8 +324,8 @@ if (isset($_GET['logout'])) {
                             <span>${item.quantity}</span>
                         </div>
                     `).join('');
-                    document.getElementById('cartItems').innerHTML = cartItems;
-                });
+                    document.getElementById('cartItems').innerHTML = cartItems || '<p>Your cart is empty.</p>';
+                }).catch(error => console.error('Error loading cart:', error));
         }
 
         // Checkout Functionality
@@ -295,5 +334,4 @@ if (isset($_GET['logout'])) {
         }
     </script>
 </body>
-
 </html>
