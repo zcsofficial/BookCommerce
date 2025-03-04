@@ -11,7 +11,7 @@ if (isset($_SESSION['user_id'])) {
     $stmt->execute();
     $user_result = $stmt->get_result();
     $user = $user_result->fetch_assoc();
-    $user_full_name = htmlspecialchars($user['fullname']);
+    $user_full_name = htmlspecialchars($user['fullname'] ?? 'Guest');
 
     // Fetch cart count for logged-in user
     $cart_query = "SELECT COUNT(*) AS cart_count FROM cart WHERE user_id = ?";
@@ -20,11 +20,11 @@ if (isset($_SESSION['user_id'])) {
     $cart_stmt->execute();
     $cart_result = $cart_stmt->get_result();
     $cart_data = $cart_result->fetch_assoc();
-    $cart_count = $cart_data['cart_count'];
+    $cart_count = $cart_data['cart_count'] ?? 0;
 }
 
-// Fetch categories from the database
-$category_query = "SELECT * FROM categories LIMIT 4";
+// Fetch ALL categories from the database (removed LIMIT 4)
+$category_query = "SELECT * FROM categories";
 $category_result = $conn->query($category_query);
 
 // Fetch featured books from the database
@@ -38,7 +38,7 @@ $book_result = $conn->query($book_query);
 if (isset($_POST['add_to_cart'])) {
     if (isset($_SESSION['user_id'])) {
         $book_id = $_POST['book_id'];
-        $quantity = $_POST['quantity'];
+        $quantity = max(1, (int)$_POST['quantity']); // Ensure quantity is at least 1
 
         // Check if the book is already in the cart
         $check_cart_query = "SELECT * FROM cart WHERE user_id = ? AND book_id = ?";
@@ -63,6 +63,10 @@ if (isset($_POST['add_to_cart'])) {
 
         // Redirect back to the page after adding to the cart
         header("Location: index.php");
+        exit();
+    } else {
+        // Redirect to login if user is not logged in
+        header("Location: login.php");
         exit();
     }
 }
@@ -111,7 +115,6 @@ if (isset($_GET['logout'])) {
     <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
     <style>
-        :where([class^="ri-"])::before { content: "\f3c2"; }
         .book-categories::-webkit-scrollbar {
             display: none;
         }
@@ -140,7 +143,7 @@ if (isset($_GET['logout'])) {
                     <a href="index.php" class="text-gray-900 hover:text-primary px-3 py-2 text-sm font-medium">Home</a>
                     <a href="books.php" class="text-gray-900 hover:text-primary px-3 py-2 text-sm font-medium">Books</a>
                     <a href="cart.php" class="text-gray-900 hover:text-primary px-3 py-2 text-sm font-medium">Cart</a>
-                    <a href="#" class="text-gray-900 hover:text-primary px-3 py-2 text-sm font-medium">Requests</a>
+                    <a href="exchange_requests.php" class="text-gray-900 hover:text-primary px-3 py-2 text-sm font-medium">Requests</a>
                 </div>
 
                 <!-- User Actions and Cart -->
@@ -161,7 +164,7 @@ if (isset($_GET['logout'])) {
                             <button id="cartBtn" class="text-gray-900 hover:text-primary px-3 py-2 text-sm font-medium">
                                 <i class="ri-shopping-cart-line text-xl"></i>
                                 <span class="absolute -top-1 -right-2 rounded-full bg-primary text-white text-xs px-2 py-1">
-                                    <?php echo $cart_count ?? 0; ?>
+                                    <?php echo $cart_count; ?>
                                 </span>
                             </button>
                         </div>
@@ -177,7 +180,7 @@ if (isset($_GET['logout'])) {
                 <a href="index.php" class="block text-gray-900 hover:text-primary px-4 py-2 text-sm font-medium border-b">Home</a>
                 <a href="books.php" class="block text-gray-900 hover:text-primary px-4 py-2 text-sm font-medium border-b">Books</a>
                 <a href="cart.php" class="block text-gray-900 hover:text-primary px-4 py-2 text-sm font-medium border-b">Cart</a>
-                <a href="#" class="block text-gray-900 hover:text-primary px-4 py-2 text-sm font-medium border-b">Requests</a>
+                <a href="exchange_requests.php" class="block text-gray-900 hover:text-primary px-4 py-2 text-sm font-medium border-b">Requests</a>
                 <?php if (isset($user_full_name)): ?>
                     <a href="account.php" class="block text-gray-900 hover:text-primary px-4 py-2 text-sm font-medium border-b">
                         <i class="ri-user-line mr-2"></i> Account
@@ -264,7 +267,7 @@ if (isset($_GET['logout'])) {
                                 <form action="index.php" method="post" class="flex items-center">
                                     <input type="hidden" name="book_id" value="<?php echo $book['id']; ?>">
                                     <input type="number" name="quantity" value="1" min="1" class="border border-gray-300 rounded-md px-2 py-1 w-16">
-                                    <button type="submit" name="add_to_cart" class="bg-primary text-white px-4 py-2 rounded-md">Add to Cart</button>
+                                    <button type="submit" name="add_to_cart" class="bg-primary text-white px-4 py-2 ml-2 rounded-md">Add to Cart</button>
                                 </form>
                             </div>
                         </div>
@@ -303,7 +306,7 @@ if (isset($_GET['logout'])) {
         });
 
         // Show Cart Modal
-        document.getElementById("cartBtn").addEventListener("click", function() {
+        document.getElementById("cartBtn")?.addEventListener("click", function() {
             document.getElementById("cartModal").classList.remove("hidden");
             loadCartItems();
         });
@@ -321,7 +324,7 @@ if (isset($_GET['logout'])) {
                     const cartItems = data.map(item => `
                         <div class="flex justify-between items-center">
                             <span>${item.title}</span>
-                            <span>${item.quantity}</span>
+                            <span>${item.quantity} x $${item.price}</span>
                         </div>
                     `).join('');
                     document.getElementById('cartItems').innerHTML = cartItems || '<p>Your cart is empty.</p>';
@@ -330,7 +333,7 @@ if (isset($_GET['logout'])) {
 
         // Checkout Functionality
         function checkout() {
-            window.location.href = "checkout.php"; // Redirect to the checkout page
+            window.location.href = "checkout.php";
         }
     </script>
 </body>

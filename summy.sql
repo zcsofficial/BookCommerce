@@ -9,3 +9,11 @@ INSERT INTO books (title, author, price, book_condition, image_url, category_id)
 ('Science Explained', 'Jane Smith', 24.99, 'Used', 'https://img.freepik.com/free-photo/red-hardcover-book-front-cover_1150-4241.jpg', 2),
 ('World War II History', 'Sarah Johnson', 14.99, 'New', 'https://img.freepik.com/free-photo/girl-flipping-page_1150-5242.jpg', 3),
 ('The Future of AI', 'James Lee', 29.99, 'Like New', 'https://img.freepik.com/free-photo/open-book-with-bookmark-bestseller_1150-5223.jpg', 4);
+
+INSERT INTO categories (name, description, book_count) VALUES 
+('Fantasy', 'Books featuring imaginative worlds, magic, and mythical creatures.', 12),
+('Biography', 'True stories about the lives of notable individuals.', 6),
+('Mystery', 'Books centered around solving crimes or uncovering secrets.', 9),
+('Self-Help', 'Guides and advice for personal growth and improvement.', 4),
+('Cooking', 'Books with recipes, cooking techniques, and culinary inspiration.', 3),
+('Travel', 'Books exploring destinations, cultures, and travel experiences.', 5);

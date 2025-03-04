@@ -58,7 +58,7 @@ function getExchangeableBooks($conn, $user_id, $searchTerm = '', $categories = [
     if (!empty($categories)) {
         $placeholders = implode(',', array_fill(0, count($categories), '?'));
         $sql .= " AND b.category_id IN ($placeholders)";
-        $params = array_merge($params, array_map('intval', $categories)); // Ensure integers
+        $params = array_merge($params, array_map('intval', $categories));
         $types .= str_repeat("i", count($categories));
     }
 
@@ -89,25 +89,53 @@ $selectedCategories = isset($_GET['categories']) ? (is_array($_GET['categories']
 $exchangeableBooks = getExchangeableBooks($conn, $user_id, $searchTerm, $selectedCategories);
 $userBooks = getUserExchangeableBooks($conn, $user_id);
 
-// Handle adding a book for exchange
+// Handle adding a book for exchange with file upload
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_book_for_exchange'])) {
     $title = trim($_POST['title']);
     $author = trim($_POST['author']);
     $category_id = intval($_POST['category_id']);
-    $image_url = trim($_POST['image_url']); // Optional, can be empty if no image
+    $image_url = ''; // Will store the path to uploaded image
 
     if (!empty($title) && !empty($author) && $category_id > 0) {
-        $add_book_sql = "INSERT INTO books (title, author, price, book_condition, image_url, category_id, user_id, for_exchange) VALUES (?, ?, 0.00, 'Used - Good', ?, ?, ?, TRUE)";
-        $add_book_stmt = $conn->prepare($add_book_sql);
-        $add_book_stmt->bind_param("sssis", $title, $author, $image_url, $category_id, $user_id);
-        if ($add_book_stmt->execute()) {
-            header('Location: exchange_book.php?success=2');
-            exit();
-        } else {
-            $error = "Failed to add book for exchange. Please try again.";
+        // Handle image upload
+        if (isset($_FILES['image_file']) && $_FILES['image_file']['error'] !== UPLOAD_ERR_NO_FILE) {
+            $file = $_FILES['image_file'];
+            $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
+            $max_size = 5 * 1024 * 1024; // 5MB
+
+            if (in_array($file['type'], $allowed_types) && $file['size'] <= $max_size && $file['error'] === UPLOAD_ERR_OK) {
+                $upload_dir = 'uploads/books/';
+                if (!file_exists($upload_dir)) {
+                    mkdir($upload_dir, 0777, true);
+                }
+                
+                $file_ext = pathinfo($file['name'], PATHINFO_EXTENSION);
+                $file_name = uniqid() . '.' . $file_ext;
+                $destination = $upload_dir . $file_name;
+
+                if (move_uploaded_file($file['tmp_name'], $destination)) {
+                    $image_url = $destination;
+                } else {
+                    $error = "Failed to upload image. Please try again.";
+                }
+            } else {
+                $error = "Invalid image file. Please upload a JPEG, PNG, or GIF file under 5MB.";
+            }
+        }
+
+        if (!isset($error)) {
+            $add_book_sql = "INSERT INTO books (title, author, price, book_condition, image_url, category_id, user_id, for_exchange) VALUES (?, ?, 0.00, 'Used - Good', ?, ?, ?, TRUE)";
+            $add_book_stmt = $conn->prepare($add_book_sql);
+            $add_book_stmt->bind_param("sssis", $title, $author, $image_url, $category_id, $user_id);
+            if ($add_book_stmt->execute()) {
+                header('Location: exchange_book.php?success=2');
+                exit();
+            } else {
+                $error = "Failed to add book for exchange. Please try again.";
+            }
         }
     } else {
-        $error = "All fields are required and must be valid.";
+        $error = "Title, author, and category are required.";
     }
 }
 
@@ -116,7 +144,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['exchange_book'])) {
     $offered_book_id = $_POST['offered_book_id'];
     $requested_book_id = $_POST['requested_book_id'];
 
-    // Check if the books exist and are available for exchange
     $check_book_sql = "SELECT * FROM books WHERE id = ? AND for_exchange = TRUE AND user_id IS NOT NULL";
     $check_stmt = $conn->prepare($check_book_sql);
     $check_stmt->bind_param("i", $offered_book_id);
@@ -388,7 +415,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['exchange_book'])) {
         <div class="modal-content">
             <span class="close-modal" onclick="closeModal()">×</span>
             <h3 class="text-lg font-semibold text-gray-800 mb-4">Add Book for Exchange</h3>
-            <form method="POST" class="space-y-4">
+            <form method="POST" enctype="multipart/form-data" class="space-y-4">
                 <input type="hidden" name="add_book_for_exchange" value="1">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
@@ -407,8 +434,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['exchange_book'])) {
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Image URL (optional)</label>
-                    <input type="text" name="image_url" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Book Image (optional, max 5MB)</label>
+                    <input type="file" name="image_file" accept="image/jpeg,image/png,image/gif" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
                 </div>
                 <button type="submit" class="w-full py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition duration-200">Add Book</button>
             </form>
@@ -504,7 +531,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['exchange_book'])) {
             document.getElementById('addBookModal').style.display = 'none';
         }
 
-        // Close modal when clicking outside
         window.addEventListener('click', function(event) {
             const modal = document.getElementById('addBookModal');
             if (event.target === modal) {
